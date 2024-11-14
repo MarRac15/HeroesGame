@@ -3,13 +3,13 @@ package org.example;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class CreatureTest {
     @Test
     void x() {
-        Creature attacker = new Creature(new DefaultDamageCalculator());
-        Creature defender = new Creature(new DefaultDamageCalculator());
+        Creature attacker = new Creature(new DefaultDamageCalculator(), new RangedAttackStrategy());
+        Creature defender = new Creature(new DefaultDamageCalculator(), new RangedAttackStrategy());
         defender.setCurrentHp(20);
         defender.setMaxHp(20);
         defender.setAmount(2);
@@ -26,8 +26,8 @@ class CreatureTest {
     @Test
     @Disabled
     void y() {
-        Creature attacker = new Creature(new DefaultDamageCalculator());
-        Creature defender = new Creature(new DefaultDamageCalculator());
+        Creature attacker = new Creature(new DefaultDamageCalculator(), new RangedAttackStrategy());
+        Creature defender = new Creature(new DefaultDamageCalculator(), new RangedAttackStrategy());
         defender.setCurrentHp(9);
         defender.setMaxHp(20);
         defender.setAmount(2);
@@ -41,8 +41,8 @@ class CreatureTest {
 
     @Test
     void z() {
-        Creature attacker = new Creature(new DefaultDamageCalculator());
-        Creature defender = new Creature(new DefaultDamageCalculator());
+        Creature attacker = new Creature(new DefaultDamageCalculator(), new RangedAttackStrategy());
+        Creature defender = new Creature(new DefaultDamageCalculator(), new RangedAttackStrategy());
         defender.setCurrentHp(20);
         defender.setMaxHp(20);
         defender.setAmount(1);
@@ -61,8 +61,8 @@ class CreatureTest {
 
     @Test
     void attackerHas50PercentChanceToDoubleDamage() {
-        Creature attacker = new Creature(new DamageBonusDamageCalculator(2));
-        Creature defender = new Creature(new DefaultDamageCalculator());
+        Creature attacker = new Creature(new DamageBonusDamageCalculator(2), new RangedAttackStrategy());
+        Creature defender = new Creature(new DefaultDamageCalculator(), new RangedAttackStrategy());
         defender.setCurrentHp(23);
         defender.setMaxHp(23);
         defender.setAmount(1);
@@ -78,4 +78,45 @@ class CreatureTest {
         assertThat(defender.getCurrentHp()).isEqualTo(15);
         assertThat(defender.getAmount()).isEqualTo(1);
     }
+
+
+    @Test
+    void testHpAfterDoubleCounter(){
+        DefaultDamageCalculator damageCalculator = new DefaultDamageCalculator();
+        Creature doubleCounterCreature = Creature.builder()
+                .attack(10)
+                .damage(6)
+                .maxHp(10)
+                .currentHp(10)
+                .moveRange(4)
+                .amount(1)
+                .dmgCalc(damageCalculator)
+                .attackStrategy(new DoubleCounterStrategy())
+                .build();
+
+        //attacker atakuje:
+
+        Creature attacker = Creature.builder()
+                .attack(10)
+                .damage(6)
+                .maxHp(10)
+                .currentHp(10)
+                .moveRange(4)
+                .amount(1)
+                .dmgCalc(damageCalculator)
+                .attackStrategy(new RangedAttackStrategy())
+                .build();
+
+        //1 atak:
+        attacker.attack(doubleCounterCreature);
+        int hpLeftFirstAttack = attacker.getCurrentHp();
+
+        //2 atak:
+        attacker.attack(doubleCounterCreature);
+        int hpLeftSecondAttack = attacker.getCurrentHp();
+
+        assertThat(hpLeftSecondAttack).isLessThan(hpLeftFirstAttack);
+    }
+
+
 }

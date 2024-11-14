@@ -17,21 +17,20 @@ public class Creature {
     private int moveRange;
 
     private DefaultDamageCalculator dmgCalc;
+    private AttackStrategy attackStrategy;
 
-    public Creature(DefaultDamageCalculator dmgCalc) {
+    public Creature(DefaultDamageCalculator dmgCalc, AttackStrategy attackStrategy)
+    {
         this.dmgCalc = dmgCalc;
+        this.attackStrategy = attackStrategy;
     }
 
     public void attack(Creature defender) {
-        defender.applyDamage(dmgCalc.calculateDamage(this, defender));
-        counterAttack(this, dmgCalc.calculateDamage(defender, this));
+        attackStrategy.attack(this, defender);
+        attackStrategy.counterAttack(this, dmgCalc.calculateDamage(defender, this));
     }
 
-    private void counterAttack(Creature creature, int damage) {
-        creature.applyDamage(damage);
-    }
-
-    private void applyDamage(int aDamageToApply) {
+    public void applyDamage(int aDamageToApply) {
         int stackToKill = aDamageToApply / maxHp;
         amount = amount - stackToKill;
         int restOfDamage = aDamageToApply - (stackToKill * maxHp);
